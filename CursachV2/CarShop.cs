@@ -14,6 +14,8 @@ namespace CursachV2
 
         BookT[] carShop;
         int LastProduct;
+        bool isPassword = false;
+        string password;
         public struct BookT
         {
             string name;
@@ -110,7 +112,7 @@ namespace CursachV2
             carShop[++LastProduct] = new BookT(name, manufacturer, price, amount, shopNumber, minimumLot);
             return false;
         }
-        public void RecviationArr(int x,string name, string manufacturer, int price, int amount, int shopNumber, int minimumLot)
+        public void RecviationArr(int x, string name, string manufacturer, int price, int amount, int shopNumber, int minimumLot)
         {
             carShop[x - 1] = new BookT(name, manufacturer, price, amount, shopNumber, minimumLot);
         }
@@ -127,7 +129,8 @@ namespace CursachV2
         public CarShop Search(string valueUpDown, string searchValue)
         {
             CarShop carShopSearch = new CarShop(0);
-            switch (valueUpDown) {
+            switch (valueUpDown)
+            {
                 case "Наименование":
                     for (int i = 0; i < carShop.Length; i++)
                     {
@@ -227,12 +230,20 @@ namespace CursachV2
             return result;
         }
         //-=-
+        public void AddPassword(string s) 
+        {
+            isPassword = true;
+            password = s;
+        }
         public void SaveTo(string path)
         {
             try
             {
                 using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.OpenOrCreate)))
                 {
+                    writer.Write(isPassword);
+                    if (isPassword)
+                        writer.Write(password);
                     foreach (BookT s in carShop)
                     {
                         writer.Write(s.ReturnName());

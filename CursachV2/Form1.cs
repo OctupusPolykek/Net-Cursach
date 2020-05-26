@@ -17,14 +17,23 @@ namespace CursachV2
         CarShop carShop, carShopSearch, carShopMinLot5, carShopCoutShop;
         public int count;
 
+        string saveToPath;
+
+        bool isPass = false;
+        string password;
+
         NewRecords newRec;
         NewRecords redactionRec;
+
         Search search;
         Search redactionSearch;
         Search deleateEl;
+
+        Password newPass;
+        CheakPass cheakpass;
         //AppA
-            Search deleateStore;
-            Search searchStore;
+        Search deleateStore;
+        Search searchStore;
         //-=-
         public Form1()
         {
@@ -78,10 +87,15 @@ namespace CursachV2
             if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
                 return;
 
+            запаролитьToolStripMenuItem.Text = "Изменить пароль";
+
             string path = openFileDialog1.FileName;
             carShop = new CarShop(1);
             using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open)))//Считывание  
             {
+                isPass = reader.ReadBoolean();
+                if (isPass)
+                    password = reader.ReadString();
                 while (reader.PeekChar() > -1)
                 {
                     string name = reader.ReadString();
@@ -101,26 +115,20 @@ namespace CursachV2
 
         private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (carShop.ReturnLenght() < 1)
-            {
-                MessageBox.Show("Файл должен иметь хотя бы 1 запись.");
-            }
-            else {
-                if (saveFileDialog1.ShowDialog() == DialogResult.Cancel)
-                    return;
-
-                // получаем выбранный файл
-                string filename = saveFileDialog1.FileName;
-
-                carShop.SaveTo(filename);
-
-                MessageBox.Show("Файл сохранен");
-            }
-
+            carShop.SaveTo(saveToPath);
+            MessageBox.Show("Файл сохранен.");
         }
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
+            if (saveFileDialog1.ShowDialog() == DialogResult.Cancel)
+                return;
+
+            // получаем выбранный файл
+            saveToPath = saveFileDialog1.FileName;
+
+            carShop.SaveTo(saveToPath);
+
             AddRecord.Enabled = true;
             dataGridView1.Enabled = true;
         }
@@ -160,11 +168,36 @@ namespace CursachV2
 
         private void редToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            redactionSearch = new Search();
-            redactionSearch.Text = "Redaction";
-            redactionSearch.arrDomain = new string[] { "Индекс массива" };
-            redactionSearch.Show();
-            redactionSearch.FormClosed += MyClosedHandlerRedaction;
+            if (isPass)
+            {
+                cheakpass = new CheakPass();
+                cheakpass.Show();
+                cheakpass.FormClosed += MyClosedHandlerCheakPass;
+            }
+            else 
+            {
+                redactionSearch = new Search();
+                redactionSearch.Text = "Redaction";
+                redactionSearch.arrDomain = new string[] { "Индекс массива" };
+                redactionSearch.Show();
+                redactionSearch.FormClosed += MyClosedHandlerRedaction;
+            }
+        }
+        protected void MyClosedHandlerCheakPass(object sender, EventArgs e)
+        {
+            if (!cheakpass.isCancel)
+            {
+                if (cheakpass.pass == password)
+                {
+                    redactionSearch = new Search();
+                    redactionSearch.Text = "Redaction";
+                    redactionSearch.arrDomain = new string[] { "Индекс массива" };
+                    redactionSearch.Show();
+                    redactionSearch.FormClosed += MyClosedHandlerRedaction;
+                }
+                else
+                    MessageBox.Show("Неверный пароль.");
+            }
         }
         protected void MyClosedHandlerRedaction(object sender, EventArgs e)
         {
@@ -197,11 +230,37 @@ namespace CursachV2
         }
         private void удалениеЗаписейToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            deleateEl = new Search();
-            deleateEl.Text = "Deleate Element";
-            deleateEl.arrDomain = new string[] { "Индекс массива" };
-            deleateEl.Show();
-            deleateEl.FormClosed += MyClosedHandlerDeleteEl;
+            if (isPass)
+            {
+                cheakpass = new CheakPass();
+                cheakpass.Show();
+                cheakpass.FormClosed += MyClosedHandlerCheakPass2;
+            }
+            else 
+            {
+                deleateEl = new Search();
+                deleateEl.Text = "Deleate Element";
+                deleateEl.arrDomain = new string[] { "Индекс массива" };
+                deleateEl.Show();
+                deleateEl.FormClosed += MyClosedHandlerDeleteEl;
+            }
+
+        }
+        protected void MyClosedHandlerCheakPass2(object sender, EventArgs e)
+        {
+            if (!cheakpass.isCancel)
+            {
+                if (cheakpass.pass == password)
+                {
+                    deleateEl = new Search();
+                    deleateEl.Text = "Deleate Element";
+                    deleateEl.arrDomain = new string[] { "Индекс массива" };
+                    deleateEl.Show();
+                    deleateEl.FormClosed += MyClosedHandlerDeleteEl;
+                }
+                else
+                    MessageBox.Show("Неверный пароль.");
+            }
         }
         protected void MyClosedHandlerDeleteEl(object sender, EventArgs e)
         {
@@ -256,6 +315,48 @@ namespace CursachV2
         private void ReloadBtn_Click(object sender, EventArgs e)
         {
             Application.Restart();
+        }
+        private void запаролитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (isPass)
+            {
+                cheakpass = new CheakPass();
+                cheakpass.Show();
+                cheakpass.FormClosed += MyClosedHandlerCheakPass3;
+            }
+            else 
+            {
+                newPass = new Password();
+                newPass.Show();
+                newPass.FormClosed += MyClosedHandlerNewPass;
+            }
+        }
+        protected void MyClosedHandlerCheakPass3(object sender, EventArgs e)
+        {
+            if (!cheakpass.isCancel)
+            {
+                if (cheakpass.pass == password)
+                {
+                    newPass = new Password();
+                    newPass.Show();
+                    newPass.FormClosed += MyClosedHandlerRegenPass;
+                }
+                else
+                    MessageBox.Show("Неверный пароль.");
+            }
+        }
+        protected void MyClosedHandlerNewPass(object sender, EventArgs e)
+        {
+            if (!newPass.isCancel)
+                carShop.AddPassword(newPass.pass);
+        }
+        protected void MyClosedHandlerRegenPass(object sender, EventArgs e)
+        {
+            if (!newPass.isCancel)
+            {
+                password = newPass.pass;
+                carShop.AddPassword(newPass.pass);
+            }
         }
     }
 }
