@@ -119,12 +119,11 @@ namespace CursachV2
         public void WriteIn(DataGridView _dgv)
         {
             _dgv.Rows.Clear();
-
+            int x = 1;
             for (int i = 0; i < carShop.Length; i++)
             {
-                _dgv.Rows.Add(carShop[i].ReturnName(), carShop[i].ReturnManufacturer(), carShop[i].ReturnPrice(), carShop[i].ReturnAmount(), carShop[i].ReturnShopNumber(), carShop[i].ReturnMinimumLot());
+                _dgv.Rows.Add(x + i, carShop[i].ReturnName(), carShop[i].ReturnManufacturer(), carShop[i].ReturnPrice(), carShop[i].ReturnAmount(), carShop[i].ReturnShopNumber(), carShop[i].ReturnMinimumLot());
             }
-
         }
         public CarShop Search(string valueUpDown, string searchValue)
         {
@@ -152,19 +151,45 @@ namespace CursachV2
                             carShopSearch.AddProduct(carShop[i].ReturnName(), carShop[i].ReturnManufacturer(), carShop[i].ReturnPrice(), carShop[i].ReturnAmount(), carShop[i].ReturnShopNumber(), carShop[i].ReturnMinimumLot());
                     }
                     break;
-                case "Индекс массива":
+                case "ID элемента":
                     int x = Int32.Parse(searchValue) - 1;
                     carShopSearch.AddProduct(carShop[x].ReturnName(), carShop[x].ReturnManufacturer(), carShop[x].ReturnPrice(), carShop[x].ReturnAmount(), carShop[x].ReturnShopNumber(), carShop[x].ReturnMinimumLot());
                     break;
             }
             return carShopSearch;
         }
-        public CarShop DeleateElementIndex(int x)
+        public CarShop DeleateElementIndex(string valueUpDown, string deleateValue)
         {
             CarShop carShopDeleateElement = new CarShop(0);
 
-            Array.Clear(carShop, x - 1, 1);
-
+            switch (valueUpDown)
+            {
+                case "Наименование":
+                    for (int i = 0; i < carShop.Length; i++)
+                    {
+                        if (carShop[i].ReturnName() == deleateValue)
+                            Array.Clear(carShop, i, 1);
+                    }
+                    break;
+                case "Фирма":
+                    for (int i = 0; i < carShop.Length; i++)
+                    {
+                        if (carShop[i].ReturnManufacturer() == deleateValue)
+                            Array.Clear(carShop, i, 1);
+                    }
+                    break;
+                case "Номер магазина":
+                    for (int i = 0; i < carShop.Length; i++)
+                    {
+                        if (carShop[i].ReturnShopNumber() + "" == deleateValue)
+                            Array.Clear(carShop, i, 1);
+                    }
+                    break;
+                case "ID элемента":
+                    int x = Int32.Parse(deleateValue) - 1;
+                    Array.Clear(carShop, x, 1);
+                    break;
+            }
             for (int i = 0; i < carShop.Length; i++)
             {
                 if (carShop[i].ReturnPrice() > 0)
@@ -176,22 +201,6 @@ namespace CursachV2
             return carShopDeleateElement;
         }
         //App A
-        public CarShop DeleateElementsShop(int shop)
-        {
-            CarShop carShopDeleateElementsShop = new CarShop(0);
-
-            for (int i = 0; i < carShop.Length; i++)
-            {
-                if (carShop[i].ReturnShopNumber() == shop)
-                    Array.Clear(carShop, i, 1);
-                if (carShop[i].ReturnPrice() > 0)
-                {
-                    carShopDeleateElementsShop.AddProduct(carShop[i].ReturnName(), carShop[i].ReturnManufacturer(), carShop[i].ReturnPrice(), carShop[i].ReturnAmount(), carShop[i].ReturnShopNumber(), carShop[i].ReturnMinimumLot());
-                }
-            }
-
-            return carShopDeleateElementsShop;
-        }
         public CarShop CoutMinimalLot5()
         {
             CarShop carShopCoutMinimalLot5 = new CarShop(0);
@@ -227,6 +236,16 @@ namespace CursachV2
             for (int i = 0; i < carShop.Length; i++)
                 allStuf += carShop[i].ReturnAmount();
             result = "Количество всех товаров: " + allStuf + Environment.NewLine;
+            return result;
+        }
+        public string ReturnPriceList()
+        {
+            string result = "";
+            result += "Наименование   Цена   Количество" + Environment.NewLine;
+            for (int i = 0; i < carShop.Length; i++)
+            {
+                result += "".PadLeft(6) + carShop[i].ReturnName().PadRight(11) + carShop[i].ReturnPrice() + "".PadRight(7) + carShop[i].ReturnAmount() + Environment.NewLine;
+            }
             return result;
         }
         //-=-

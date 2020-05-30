@@ -14,7 +14,7 @@ namespace CursachV2
 {
     public partial class Form1 : Form
     {
-        CarShop carShop, carShopSearch, carShopMinLot5, carShopCoutShop;
+        CarShop carShop, carShop2;
         public int count;
 
         string saveToPath;
@@ -32,7 +32,6 @@ namespace CursachV2
         Password newPass;
         CheakPass cheakpass;
         //AppA
-        Search deleateStore;
         Search searchStore;
         //-=-
         public Form1()
@@ -42,30 +41,29 @@ namespace CursachV2
         private void Form1_Load(object sender, EventArgs e)
         {
             carShop = new CarShop(0);
+            this.FormClosed += MyClosedHandlerMainForm;
+
             AddRecord.Enabled = false;
             dataGridView1.Enabled = false;
-            label1.Text = "Весь список:";
-            this.FormClosed += MyClosedHandlerMainForm;
+            groupBox1.Enabled = false;
+            поискToolStripMenuItem.Enabled = false;
+            ShowInfoCheck.Enabled = false;
+            сохранитьToolStripMenuItem.Enabled = false;
+            запаролитьToolStripMenuItem.Enabled = false;
+            редактированиеЗаписейToolStripMenuItem.Enabled = false;
+            выводToolStripMenuItem.Enabled = false;
         }
         protected void MyClosedHandlerMainForm(object sender, EventArgs e)
         {
-            if (carShop.ReturnLenght() < 1) ;
-            else
+            if (carShop.ReturnLenght() > 0)
             {
                 var save = MessageBox.Show("Хотите сохранить значения?", "Сохранение", MessageBoxButtons.YesNo);
                 if (save == DialogResult.Yes)
                 {
-                    if (saveFileDialog1.ShowDialog() == DialogResult.Cancel)
-                        return;
-
-                    // получаем выбранный файл
-                    string filename = saveFileDialog1.FileName;
-
-                    carShop.SaveTo(filename);
-
-                    MessageBox.Show("Файл сохранен");
+                    carShop.SaveTo(saveToPath);
                 }
             }
+
         }
         private void AddRecord_Click(object sender, EventArgs e)
         {
@@ -73,6 +71,8 @@ namespace CursachV2
             newRec.btnTxt = "Добавить";
             newRec.Show();
             newRec.FormClosed += MyClosedHandlerRecords;
+
+            выводToolStripMenuItem.Enabled = true;
         }
         protected void MyClosedHandlerRecords(object sender, EventArgs e)
         {
@@ -87,9 +87,9 @@ namespace CursachV2
             if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
                 return;
 
-            запаролитьToolStripMenuItem.Text = "Изменить пароль";
-
             string path = openFileDialog1.FileName;
+            MessageBox.Show(path);
+            saveToPath = path;
             carShop = new CarShop(1);
             using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open)))//Считывание  
             {
@@ -108,15 +108,30 @@ namespace CursachV2
                     carShop.AddProduct(name, manufacturer, price, amount, shopNumber, minimumLot);
                 }
             }
+            if (isPass)
+                запаролитьToolStripMenuItem.Text = "Изменить пароль";
+            else
+                запаролитьToolStripMenuItem.Text = "Запаролить";
+
             AddRecord.Enabled = true;
             dataGridView1.Enabled = true;
+            groupBox1.Enabled = true;
+            поискToolStripMenuItem.Enabled = true;
+            сохранитьToolStripMenuItem.Enabled = true;
+            запаролитьToolStripMenuItem.Enabled = true;
+            редактированиеЗаписейToolStripMenuItem.Enabled = true;
+            выводToolStripMenuItem.Enabled = true;
+
             carShop.WriteIn(dataGridView1);
         }
 
         private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            carShop.SaveTo(saveToPath);
-            MessageBox.Show("Файл сохранен.");
+            if (carShop.ReturnLenght() > 0)
+            {
+                carShop.SaveTo(saveToPath);
+                MessageBox.Show("Файл сохранен.");
+            }
         }
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
@@ -127,45 +142,46 @@ namespace CursachV2
             // получаем выбранный файл
             saveToPath = saveFileDialog1.FileName;
 
-            carShop.SaveTo(saveToPath);
-
             AddRecord.Enabled = true;
             dataGridView1.Enabled = true;
+            groupBox1.Enabled = true;
+            поискToolStripMenuItem.Enabled = true;
+            сохранитьToolStripMenuItem.Enabled = true;
+            запаролитьToolStripMenuItem.Enabled = true;
+            редактированиеЗаписейToolStripMenuItem.Enabled = true;
         }
 
         //--Search--//
         private void поискToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            ShowInfoCheck.Enabled = true;
+
             search = new Search();
-            search.arrDomain = new string[] { "Наименование", "Фирма", "Номер магазина", "Индекс массива" };
+            search.arrDomain = new string[] { "Наименование", "Фирма", "Номер магазина", "ID элемента" };
             search.Show();
             search.FormClosed += MyClosedHandlerSearch;
-            label1.Text = "По ключевому слову:";
         }
         protected void MyClosedHandlerSearch(object sender, EventArgs e)
         {
             if (!search.isCancel)
             {
-                carShopSearch = carShop.Search(search.domainValue, search.value);
-                if (carShopSearch.ReturnLenght() < 1)
+                carShop2 = carShop.Search(search.domainValue, search.value);
+                if (carShop2.ReturnLenght() < 1)
                 {
-                    label1.Text = "Весь список:";
                     MessageBox.Show("Запись не найдена.");
                 }
                 else
-                    carShopSearch.WriteIn(dataGridView1);
+                {
+                    ShowInfoCheck.Enabled = true;
+                    ShowInfoCheck.Checked = false;
+                }
             }
             else
-                label1.Text = "Весь список:";
+            {
+                ShowInfoCheck.Checked = true;
+            }
         }
         //---------//
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            label1.Text = "Весь список:";
-            carShop.WriteIn(dataGridView1);
-        }
-
         private void редToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (isPass)
@@ -178,7 +194,7 @@ namespace CursachV2
             {
                 redactionSearch = new Search();
                 redactionSearch.Text = "Redaction";
-                redactionSearch.arrDomain = new string[] { "Индекс массива" };
+                redactionSearch.arrDomain = new string[] { "ID элемента" };
                 redactionSearch.Show();
                 redactionSearch.FormClosed += MyClosedHandlerRedaction;
             }
@@ -240,7 +256,7 @@ namespace CursachV2
             {
                 deleateEl = new Search();
                 deleateEl.Text = "Deleate Element";
-                deleateEl.arrDomain = new string[] { "Индекс массива" };
+                deleateEl.arrDomain = new string[] { "Наименование", "Фирма", "Номер магазина", "ID элемента" };
                 deleateEl.Show();
                 deleateEl.FormClosed += MyClosedHandlerDeleteEl;
             }
@@ -254,7 +270,7 @@ namespace CursachV2
                 {
                     deleateEl = new Search();
                     deleateEl.Text = "Deleate Element";
-                    deleateEl.arrDomain = new string[] { "Индекс массива" };
+                    deleateEl.arrDomain = new string[] { "Наименование", "Фирма", "Номер магазина", "ID элемента" };
                     deleateEl.Show();
                     deleateEl.FormClosed += MyClosedHandlerDeleteEl;
                 }
@@ -266,30 +282,15 @@ namespace CursachV2
         {
             if (!deleateEl.isCancel)
             {
-                carShop = carShop.DeleateElementIndex(Int32.Parse(deleateEl.value));
-                carShop.WriteIn(dataGridView1);
-            }
-        }
-        private void AppAa_Click(object sender, EventArgs e)
-        {
-            deleateStore = new Search();
-            deleateStore.Text = "Deleate Store";
-            deleateStore.arrDomain = new string[] { "Номер магазина" };
-            deleateStore.Show();
-            deleateStore.FormClosed += MyClosedHandlerDeleateStore;
-        }
-        protected void MyClosedHandlerDeleateStore(object sender, EventArgs e)
-        {
-            if (!deleateStore.isCancel)
-            {
-                carShop = carShop.DeleateElementsShop(Int32.Parse(deleateStore.value));
+                carShop = carShop.DeleateElementIndex(deleateEl.domainValue, deleateEl.value);
                 carShop.WriteIn(dataGridView1);
             }
         }
         private void AppAb_Click(object sender, EventArgs e)
         {
-            carShopMinLot5 = carShop.CoutMinimalLot5();
-            carShopMinLot5.WriteIn(dataGridView1);
+            carShop2 = carShop.CoutMinimalLot5();
+            ShowInfoCheck.Enabled = true;
+            ShowInfoCheck.Checked = false;
         }
         private void AppAc_Click(object sender, EventArgs e)
         {
@@ -303,9 +304,10 @@ namespace CursachV2
         {
             if (!searchStore.isCancel)
             {
-                carShopCoutShop = carShop.CoutShopElements(Int32.Parse(searchStore.value));
-                carShopCoutShop.WriteIn(dataGridView1);
-                richTextBox1.AppendText(carShopCoutShop.ReturnShopElements());
+                carShop2 = carShop.CoutShopElements(Int32.Parse(searchStore.value));
+                richTextBox1.AppendText(carShop2.ReturnShopElements());
+                ShowInfoCheck.Checked = false;
+                ShowInfoCheck.Enabled = true;
             }
         }
         private void ExitBtn_Click(object sender, EventArgs e)
@@ -348,7 +350,22 @@ namespace CursachV2
         protected void MyClosedHandlerNewPass(object sender, EventArgs e)
         {
             if (!newPass.isCancel)
+            {
                 carShop.AddPassword(newPass.pass);
+                carShop.SaveTo(saveToPath);
+            }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (ShowInfoCheck.Checked == true)
+            {
+                carShop.WriteIn(dataGridView1);
+            }
+            else
+            {
+                carShop2.WriteIn(dataGridView1);
+            }
         }
         protected void MyClosedHandlerRegenPass(object sender, EventArgs e)
         {
@@ -356,7 +373,55 @@ namespace CursachV2
             {
                 password = newPass.pass;
                 carShop.AddPassword(newPass.pass);
+                carShop.SaveTo(saveToPath);
             }
+        }
+        private void прайсЛистВTxtToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (saveFileDialog1.ShowDialog() == DialogResult.Cancel)
+                return;
+
+            // получаем выбранный файл
+            string writePath = saveFileDialog1.FileName + ".txt";
+
+            using (StreamWriter sw = new StreamWriter(writePath, false, System.Text.Encoding.Default))
+            {
+                sw.WriteLine(carShop.ReturnPriceList());
+            }
+        }
+        private void файлНа20ЗаписейToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string path = @"C:\Users\rasia\source\repos\CursachV2\Cars";
+            saveToPath = path;
+            carShop = new CarShop(1);
+            using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open)))//Считывание  
+            {
+                isPass = reader.ReadBoolean();
+                if (isPass)
+                    password = reader.ReadString();
+                while (reader.PeekChar() > -1)
+                {
+                    string name = reader.ReadString();
+                    string manufacturer = reader.ReadString();
+                    int price = reader.ReadInt32();
+                    int amount = reader.ReadInt32();
+                    int shopNumber = reader.ReadInt32();
+                    int minimumLot = reader.ReadInt32();
+
+                    carShop.AddProduct(name, manufacturer, price, amount, shopNumber, minimumLot);
+                }
+            }
+
+            AddRecord.Enabled = true;
+            dataGridView1.Enabled = true;
+            groupBox1.Enabled = true;
+            поискToolStripMenuItem.Enabled = true;
+            сохранитьToolStripMenuItem.Enabled = true;
+            запаролитьToolStripMenuItem.Enabled = true;
+            редактированиеЗаписейToolStripMenuItem.Enabled = true;
+            выводToolStripMenuItem.Enabled = true;
+
+            carShop.WriteIn(dataGridView1);
         }
     }
 }

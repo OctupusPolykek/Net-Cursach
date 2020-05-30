@@ -58,6 +58,7 @@
             this.ShowChackBox.AutoSize = true;
             this.ShowChackBox.Location = new System.Drawing.Point(64, 34);
             this.ShowChackBox.Name = "ShowChackBox";
+            this.ShowChackBox.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.ShowChackBox.Size = new System.Drawing.Size(114, 17);
             this.ShowChackBox.TabIndex = 7;
             this.ShowChackBox.Text = "Показать пароль";
